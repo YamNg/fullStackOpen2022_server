@@ -9,13 +9,14 @@
     "dev": "nodemon index.js",
     "build:ui": "rm -rf build && cd ../fullstackopen/part3/phonebook && npm run build && cp -r build ../../../fullstackopen_server",
     "deploy": "git push heroku main",
-    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && npm run deploy",    
+    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && npm run deploy",
     "logs:prod": "heroku logs --tail"
   },
   "author": "Yam Ng",
   "license": "MIT",
   "dependencies": {
     "express": "^4.18.1",
+    "mongoose": "^6.4.4",
     "morgan": "^1.10.0"
   },
   "devDependencies": {
