@@ -33,7 +33,7 @@ app.get('/api/persons', (request, response) => {
   })
 })
 
-app.get('/api/persons/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response, next) => {
   Person.findById(request.params.id)
     .then(person => {
       if (person) {
@@ -47,7 +47,7 @@ app.get('/api/persons/:id', (request, response) => {
 
 app.delete('/api/persons/:id', (request, response, next) => {
   Person.findByIdAndRemove(request.params.id)
-    .then((result) => {
+    .then(() => {
       response.status(204).end()
     })
     .catch(error => next(error))
@@ -77,8 +77,8 @@ app.post('/api/persons', (request, response, next) => {
         response.status(400).send({ error: 'entry already exists' })
       } else {
         person.save()
-        .then((returnPerson) => response.json(returnPerson))
-        .catch((error) => next(error))
+          .then((returnPerson) => response.json(returnPerson))
+          .catch((error) => next(error))
       }
     })
     .catch((error) => next(error))
