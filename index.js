@@ -34,28 +34,38 @@ app.get('/api/persons', (request, response) => {
 })
 
 app.get('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  const person = persons.find(person => person.id === id)
-  
-  if (person) {
-      response.json(person)
-  } else {
-      response.status(404).send("Object Not Found")
+  Person.findById(request.params.id)
+    .then(person => {
+      if (person) {
+        response.json(person)
+      } else {
+        response.status(404).end()
+      }
+    })
+    .catch(error => next(error))
+})
+
+app.delete('/api/persons/:id', (request, response, next) => {
+  Person.findByIdAndRemove(request.params.id)
+    .then((result) => {
+      response.status(204).end()
+    })
+    .catch(error => next(error))
+})
+
+app.put('/api/persons/:id', (request, response, next) => {
+  const body = request.body
+
+  const person = {
+    number: body.number
   }
+
+  Person.findByIdAndUpdate(request.params.id, person, { new: true })
+    .then(updatedPerson => {
+      response.json(updatedPerson)
+    })
+    .catch(error => next(error))
 })
-
-app.delete('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  persons = persons.filter(person => person.id !== id)
-
-  response.status(204).end()
-})
-
-const generateId = (min, max) => {
-  min = Math.ceil(min)
-  max = Math.floor(max)
-  return Math.floor(Math.random() * (max - min + 1) + min)
-}
 
 app.post('/api/persons', (request, response) => {
   const body = request.body
@@ -66,27 +76,26 @@ app.post('/api/persons', (request, response) => {
   })
 
   person.save().then((returnPerson) => response.json(returnPerson))
-
-  // if (!body.name || !body.number) {
-  //   return response.status(400).json({ 
-  //     error: 'parameter missing' 
-  //   })
-  // } else if(persons.find((person => person.name === body.name))) {
-  //   return response.status(400).json({ 
-  //     error: 'name must be unique' 
-  //   })
-  // }
-
-  // const person = {
-  //   name: body.name,
-  //   number: body.number,
-  //   id: generateId(10, 100000),
-  // }
-
-  // persons = persons.concat(person)
-
-  // response.json(person)
 })
+
+// Handle unknown endpoint
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' })
+}
+
+app.use(unknownEndpoint)
+
+// Error Handling Middleware
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  } 
+
+  next(error)
+}
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
